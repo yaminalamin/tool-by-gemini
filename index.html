@@ -3,197 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yamin Al Amin | Bulk Messenger</title>
+    <title>Yamin Al Amin | Outreach Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: '#3b82f6',
-                        dark: '#0f172a',
-                        darker: '#020617'
-                    }
-                }
-            }
-        }
-    </script>
+    <style>
+        .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; }
+        [contenteditable]:focus { outline: 1px solid #3b82f6; background: #1e293b; padding: 2px; border-radius: 4px; }
+    </style>
 </head>
-<body class="bg-darker text-gray-200 min-h-screen font-sans antialiased selection:bg-brand selection:text-white">
-    <div class="max-w-4xl mx-auto p-6 md:p-12">
-        
-        <header class="flex items-center space-x-4 mb-10 border-b border-gray-800 pb-6">
-            <img src="https://yaminalamin.com/favicon.ico" alt="Yamin Al Amin Logo" 
-                 onerror="this.src='https://ui-avatars.com/api/?name=Yamin+Al+Amin&background=0f172a&color=fff'" 
-                 class="w-12 h-12 rounded-lg shadow-lg object-cover bg-dark">
-            <div>
-                <h1 class="text-2xl font-bold text-white tracking-tight">Yamin Al Amin</h1>
-                <p class="text-sm text-gray-400">Bulk Messaging Protocol via Resend</p>
+<body class="bg-[#020617] text-gray-200 min-h-screen font-sans antialiased">
+
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+        <header class="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-gray-800 pb-6 gap-4">
+            <div class="flex items-center space-x-4">
+                <img src="https://yaminalamin.com/favicon.ico" alt="Logo" class="w-10 h-10 rounded bg-slate-800" onerror="this.src='https://ui-avatars.com/api/?name=YA&background=3b82f6&color=fff'">
+                <div>
+                    <h1 class="text-xl font-bold text-white">Outreach Studio</h1>
+                    <p class="text-xs text-gray-500">Professional Email Protocol</p>
+                </div>
             </div>
+            <nav class="flex space-x-6 text-sm font-medium">
+                <button onclick="showTab('single')" id="tab-single" class="pb-2 transition-colors hover:text-white">Single Mail</button>
+                <button onclick="showTab('bulk')" id="tab-bulk" class="pb-2 transition-colors hover:text-white tab-active">Bulk Campaign</button>
+                <button onclick="showTab('settings')" id="tab-settings" class="pb-2 transition-colors hover:text-white">Settings</button>
+            </nav>
         </header>
 
-        <main class="bg-dark border border-gray-800 rounded-xl p-6 md:p-8 shadow-2xl">
-            
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Resend API Key</label>
-                    <input type="password" id="apiKey" placeholder="re_xxxxxxxxxxxxxxxxx" 
-                           class="w-full bg-darker border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors">
-                    <p class="text-xs text-gray-500 mt-2">Your key is kept securely in your browser and is never saved to the server.</p>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-2">Upload Contact Sheet (CSV)</label>
-                    <div class="flex items-center justify-center w-full">
-                        <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-700 border-dashed rounded-lg cursor-pointer bg-darker hover:border-brand hover:bg-gray-900 transition-all">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg class="w-8 h-8 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                                <p class="mb-2 text-sm text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p class="text-xs text-gray-500">Requires headers: name, gmail, msg</p>
-                            </div>
-                            <input id="csvFile" type="file" class="hidden" accept=".csv" />
-                        </label>
+        <section id="content-settings" class="hidden animate-fade-in">
+            <div class="max-w-2xl bg-[#0f172a] border border-gray-800 rounded-xl p-8 shadow-xl">
+                <h2 class="text-lg font-semibold mb-6">Configuration</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Resend API Key</label>
+                        <input type="password" id="cfg-key" class="w-full bg-[#020617] border border-gray-700 rounded-lg px-4 py-2 focus:border-brand">
                     </div>
-                </div>
-
-                <div id="previewContainer" class="hidden mt-8">
-                    <h3 class="text-lg font-medium text-white mb-4 flex justify-between items-center">
-                        <span>Data Preview</span>
-                        <span id="rowCount" class="text-sm bg-gray-800 px-3 py-1 rounded-full text-gray-300">0 rows</span>
-                    </h3>
-                    <div class="overflow-x-auto rounded-lg border border-gray-700">
-                        <table class="w-full text-sm text-left text-gray-300">
-                            <thead class="text-xs text-gray-400 uppercase bg-gray-800 border-b border-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3">Name</th>
-                                    <th class="px-6 py-3">Email (gmail)</th>
-                                    <th class="px-6 py-3">Message</th>
-                                    <th class="px-6 py-3">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody" class="divide-y divide-gray-800">
-                                </tbody>
-                        </table>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Sender Name (e.g. Yamin Al Amin)</label>
+                        <input type="text" id="cfg-name" class="w-full bg-[#020617] border border-gray-700 rounded-lg px-4 py-2">
                     </div>
-
-                    <button id="sendBtn" class="mt-6 w-full bg-white text-black hover:bg-gray-200 font-semibold py-3 px-6 rounded-lg transition-colors flex justify-center items-center">
-                        Launch Bulk Campaign
-                    </button>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Sender Email</label>
+                        <input type="email" id="cfg-email" placeholder="hello@yaminalamin.com" class="w-full bg-[#020617] border border-gray-700 rounded-lg px-4 py-2">
+                    </div>
+                    <button onclick="saveSettings()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all">Save Configuration</button>
                 </div>
-
             </div>
-        </main>
+        </section>
+
+        <section id="content-single" class="hidden animate-fade-in">
+            <div class="max-w-2xl bg-[#0f172a] border border-gray-800 rounded-xl p-8 shadow-xl">
+                <h2 class="text-lg font-semibold mb-6">Draft Single Email</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="single-name" placeholder="Recipient Name" class="bg-[#020617] border border-gray-700 rounded-lg px-4 py-2">
+                        <input type="email" id="single-email" placeholder="Recipient Email" class="bg-[#020617] border border-gray-700 rounded-lg px-4 py-2">
+                    </div>
+                    <input type="text" id="single-subject" placeholder="Subject Line" class="w-full bg-[#020617] border border-gray-700 rounded-lg px-4 py-2">
+                    <textarea id="single-msg" rows="6" placeholder="Your message..." class="w-full bg-[#020617] border border-gray-700 rounded-lg px-4 py-2"></textarea>
+                    <button onclick="sendSingle()" id="btn-single-send" class="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200">Send Now</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="content-bulk" class="animate-fade-in">
+            <div id="bulk-step-1" class="max-w-2xl mx-auto text-center border-2 border-dashed border-gray-800 rounded-2xl p-12 bg-[#0f172a]">
+                <div class="mb-4 flex justify-center"><svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg></div>
+                <h2 class="text-xl font-bold mb-2">Upload Leads Sheet</h2>
+                <p class="text-gray-500 mb-6 text-sm">Upload a CSV with headers: <b>name, gmail, msg</b></p>
+                <input type="file" id="bulk-file" class="hidden" accept=".csv" onchange="handleFileUpload(this)">
+                <button onclick="document.getElementById('bulk-file').click()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-all">Select CSV File</button>
+            </div>
+
+            <div id="bulk-step-2" class="hidden">
+                <div class="flex flex-col md:flex-row justify-between items-end mb-6 gap-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Review & Personalize</h2>
+                        <p class="text-sm text-gray-500">Click any cell to edit text directly. Use checkboxes to select targets.</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="resetBulk()" class="text-gray-400 px-4 py-2 hover:text-white text-sm">Cancel</button>
+                        <button onclick="sendSelected()" id="btn-bulk-send" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700">Send Selected</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto border border-gray-800 rounded-xl shadow-2xl">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-[#0f172a] text-gray-400 border-b border-gray-800">
+                            <tr>
+                                <th class="px-4 py-4"><input type="checkbox" id="select-all" onclick="toggleAll(this)" class="rounded border-gray-700"></th>
+                                <th class="px-6 py-4 font-medium uppercase tracking-wider">Recipient Name</th>
+                                <th class="px-6 py-4 font-medium uppercase tracking-wider">Email</th>
+                                <th class="px-6 py-4 font-medium uppercase tracking-wider">Message Draft</th>
+                                <th class="px-6 py-4 font-medium uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulk-table-body" class="divide-y divide-gray-800 bg-[#020617]">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
-        let emailData = [];
-        const fileInput = document.getElementById('csvFile');
-        const tableBody = document.getElementById('tableBody');
-        const previewContainer = document.getElementById('previewContainer');
-        const sendBtn = document.getElementById('sendBtn');
-        const rowCount = document.getElementById('rowCount');
-
-        // Handle File Upload & Parsing
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    emailData = results.data;
-                    renderTable();
-                }
+        // --- Core Navigation ---
+        function showTab(tabId) {
+            ['single', 'bulk', 'settings'].forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active');
             });
-        });
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('tab-active');
+        }
 
-        // Render Data in Table
-        function renderTable() {
-            tableBody.innerHTML = '';
-            
-            if(emailData.length > 0) {
-                previewContainer.classList.remove('hidden');
-                rowCount.innerText = `${emailData.length} contacts loaded`;
-            }
+        // --- Settings Logic ---
+        function saveSettings() {
+            const data = {
+                key: document.getElementById('cfg-key').value,
+                name: document.getElementById('cfg-name').value,
+                email: document.getElementById('cfg-email').value
+            };
+            localStorage.setItem('ya_outreach_config', JSON.stringify(data));
+            alert('Configuration saved securely.');
+        }
 
-            emailData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                tr.className = "bg-darker hover:bg-gray-900 transition-colors";
-                tr.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-white">${row.name || '-'}</td>
-                    <td class="px-6 py-4 text-brand">${row.gmail || '-'}</td>
-                    <td class="px-6 py-4 truncate max-w-xs">${row.msg || '-'}</td>
-                    <td class="px-6 py-4">
-                        <span id="status-${index}" class="text-gray-500 text-xs font-semibold px-2 py-1 rounded bg-gray-800">Pending</span>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
+        function getSettings() {
+            return JSON.parse(localStorage.getItem('ya_outreach_config')) || {};
+        }
+
+        // Load settings on boot
+        window.onload = () => {
+            const cfg = getSettings();
+            if(cfg.key) document.getElementById('cfg-key').value = cfg.key;
+            if(cfg.name) document.getElementById('cfg-name').value = cfg.name;
+            if(cfg.email) document.getElementById('cfg-email').value = cfg.email;
+        }
+
+        // --- Bulk Messaging Logic ---
+        let leadData = [];
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: (results) => {
+                    leadData = results.data;
+                    renderBulkTable();
+                    document.getElementById('bulk-step-1').classList.add('hidden');
+                    document.getElementById('bulk-step-2').classList.remove('hidden');
+                }
             });
         }
 
-        // Handle Sending Logic
-        sendBtn.addEventListener('click', async function() {
-            const apiKey = document.getElementById('apiKey').value;
-            if (!apiKey) {
-                alert("Please enter your Resend API Key.");
-                return;
-            }
+        function renderBulkTable() {
+            const tbody = document.getElementById('bulk-table-body');
+            tbody.innerHTML = leadData.map((row, i) => `
+                <tr class="hover:bg-[#0f172a] transition-colors group">
+                    <td class="px-4 py-4"><input type="checkbox" class="row-check rounded border-gray-700" data-index="${i}" checked></td>
+                    <td class="px-6 py-4 font-medium text-white" contenteditable="true" onblur="updateData(${i}, 'name', this.innerText)">${row.name || ''}</td>
+                    <td class="px-6 py-4 text-blue-400" contenteditable="true" onblur="updateData(${i}, 'gmail', this.innerText)">${row.gmail || ''}</td>
+                    <td class="px-6 py-4 text-gray-400 italic" contenteditable="true" onblur="updateData(${i}, 'msg', this.innerText)">${row.msg || ''}</td>
+                    <td class="px-6 py-4"><span id="status-${i}" class="text-[10px] uppercase font-bold text-gray-600">Pending</span></td>
+                </tr>
+            `).join('');
+        }
 
-            sendBtn.disabled = true;
-            sendBtn.innerText = "Sending in progress...";
-            sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        function updateData(index, field, value) { leadData[index][field] = value; }
+        function toggleAll(master) { document.querySelectorAll('.row-check').forEach(c => c.checked = master.checked); }
+        function resetBulk() { document.getElementById('bulk-step-2').classList.add('hidden'); document.getElementById('bulk-step-1').classList.remove('hidden'); }
 
-            for (let i = 0; i < emailData.length; i++) {
-                const row = emailData[i];
-                const statusBadge = document.getElementById(`status-${i}`);
-                
-                if (!row.gmail || !row.msg) {
-                    updateStatus(statusBadge, 'Skipped (Missing Data)', 'bg-yellow-900/50 text-yellow-500');
-                    continue;
-                }
+        // --- Resend API Integration ---
+        async function apiCall(to, name, msg, subject = "Message from Yamin Al Amin") {
+            const cfg = getSettings();
+            if(!cfg.key) throw new Error("API Key Missing");
 
-                updateStatus(statusBadge, 'Sending...', 'bg-blue-900/50 text-blue-400');
+            const response = await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${cfg.key}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    from: `${cfg.name || 'Admin'} <${cfg.email || 'hello@yaminalamin.com'}>`,
+                    to: [to], subject: subject,
+                    html: `<div style="font-family:sans-serif; color:#333;"><p>Hi ${name},</p><p>${msg.replace(/\n/g, '<br>')}</p></div>`
+                })
+            });
+            return response.ok;
+        }
+
+        async function sendSingle() {
+            const btn = document.getElementById('btn-single-send');
+            btn.disabled = true; btn.innerText = "Sending...";
+            try {
+                const ok = await apiCall(document.getElementById('single-email').value, document.getElementById('single-name').value, document.getElementById('single-msg').value, document.getElementById('single-subject').value);
+                alert(ok ? "Sent successfully!" : "Failed to send.");
+            } catch (e) { alert(e.message); }
+            btn.disabled = false; btn.innerText = "Send Now";
+        }
+
+        async function sendSelected() {
+            const selectedChecks = document.querySelectorAll('.row-check:checked');
+            const btn = document.getElementById('btn-bulk-send');
+            btn.disabled = true;
+
+            for (let check of selectedChecks) {
+                const i = check.dataset.index;
+                const status = document.getElementById(`status-${i}`);
+                status.innerText = "Sending..."; status.className = "text-[10px] text-blue-500 font-bold uppercase";
 
                 try {
-                    const response = await fetch('https://api.resend.com/emails', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            from: 'Yamin Al Amin <hello@yaminalamin.com>',
-                            to: [row.gmail.trim()],
-                            subject: 'Message from Yamin Al Amin',
-                            html: `<p>Hi ${row.name || 'there'},</p><p>${row.msg.replace(/\n/g, '<br>')}</p>`
-                        })
-                    });
-
-                    if (response.ok) {
-                        updateStatus(statusBadge, 'Sent', 'bg-green-900/50 text-green-400');
-                    } else {
-                        const err = await response.json();
-                        updateStatus(statusBadge, 'Failed', 'bg-red-900/50 text-red-400');
-                        console.error('Resend Error:', err);
-                    }
-                } catch (error) {
-                    updateStatus(statusBadge, 'Error', 'bg-red-900/50 text-red-400');
-                    console.error('Fetch Error:', error);
+                    const ok = await apiCall(leadData[i].gmail, leadData[i].name, leadData[i].msg);
+                    if(ok) {
+                        status.innerText = "Sent"; status.className = "text-[10px] text-green-500 font-bold uppercase";
+                    } else { throw new Error(); }
+                } catch {
+                    status.innerText = "Failed"; status.className = "text-[10px] text-red-500 font-bold uppercase";
                 }
-
-                // Small delay to prevent hitting API rate limits instantly
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise(r => setTimeout(r, 600)); // Rate limit protection
             }
-
-            sendBtn.innerText = "Campaign Complete";
-        });
-
-        function updateStatus(element, text, classes) {
-            element.className = `text-xs font-semibold px-2 py-1 rounded ${classes}`;
-            element.innerText = text;
+            btn.disabled = false;
         }
     </script>
 </body>
